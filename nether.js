@@ -1,14 +1,48 @@
 var express = require('express');
 var fortune = require('./lib/fortune.js');
-var handlebars = require('express-handlebars')
-    .create({ defaultLayout: 'main' });
+var handlebars = require('express-handlebars').create({
+    defaultLayout: 'main'});
 
 var app = express();
+
+function getWeatherData() {
+    return {
+        locations: [
+            {
+                name: 'Portland',
+                forecastUrl: 'http://www.wunderground.com/US/OR/Portland.html',
+                iconUrl: 'http://icons-ak.wxug.com/i/c/k/cloudy.gif',
+                weather: 'Cloudy',
+                temp: '12.3 C'
+            },
+            {
+                name: 'Bend',
+                forecastUrl: 'http://www.wunderground.com/US/OR/Bend.html',
+                iconUrl: 'http://icons-ak.wxug.com/i/c/k/partlycloudy.gif',
+                weather: 'Parlty cloudy',
+                temp: '12.8 C'
+            },
+            {
+                name: 'Manzanita',
+                forecastUrl: 'http://www.wunderground.com/US/OR/Manzanita.html',
+                iconUrl: 'http://icons-ak.wxug.com/i/c/k/rain.gif',
+                weather: 'Rain',
+                temp: '12.8 C'
+            }
+        ]
+    };
+}
 
 app.engine('handlebars', handlebars.engine);
 app.set('view engine', 'handlebars');
 
 app.set('port', process.env.PORT || 3000);
+
+app.use(function(req, res, next) {
+    if(!res.locals.partials) res.locals.partials = {};
+    res.locals.partials.weatherContext = getWeatherData();
+    next();
+});
 
 app.use(function(req, res, next) {
     res.locals.showTests = app.get('env') !=='production' &&
