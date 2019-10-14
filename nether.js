@@ -1,7 +1,18 @@
 var express = require('express');
 var fortune = require('./lib/fortune.js');
+var formidable = require('formidable');
 var handlebars = require('express-handlebars').create({
-    defaultLayout: 'main'});
+    defaultLayout: 'main',
+    helpers: {
+        section: function(name, options) {
+            if(!this._sections) this._sections = {};
+            this._sections[name] = options.fn(this);
+            return null;
+        }
+    }
+});
+
+var bodyParser = require('body-parser');
 
 var app = express();
 
@@ -37,6 +48,8 @@ app.engine('handlebars', handlebars.engine);
 app.set('view engine', 'handlebars');
 
 app.set('port', process.env.PORT || 3000);
+
+app.use(bodyParser.urlencoded({ extended: true}));
 
 app.use(function(req, res, next) {
     if(!res.locals.partials) res.locals.partials = {};
@@ -74,6 +87,52 @@ app.get('/tours/nether-fortress', function(req, res) {
 
 app.get('/tours/request-group-rate', function(req, res) {
     res.render('tours/request-group-rate');
+});
+
+app.get('/newsletter', function(req, res) {
+    res.render('newsletter', {csrf: 'CSRF token goes here'});
+});
+
+app.post('/process', function(req, res) {
+    if(req.xhr || req.accepts('json.html') === 'json'){
+        res.send({success: true});
+    } else {
+        res.redirect(303, '/thank-you');
+    }
+});
+
+app.get('/thank-you', function(req, res) {
+    res.render('thank-you');
+});
+
+app.get('/contest/vacation-photo', function(req, res){
+    var now = new Date();
+    res.render('contest/vacation-photo', { year: now.getFullYear(), month: now.getMonth() });
+});
+
+app.post('/contest/vacation-photo/:year/:month', function(req, res) {
+    var form = new formidable.IncomingForm();
+    form.parse(req, function(err, fields, files){
+        if(err) return res.redirect(303, '/error');
+        console.log('received fields:');
+        console.log(fields);
+        console.log('received files:');
+        console.log(files);
+        res.redirect(303, '/thank-you');
+    });
+});
+
+app.get('/nursery-rhyme', function(req, res) {
+    res.render('nursery-rhyme');
+});
+
+app.get('/data/nursery-rhyme', function(req, res) {
+    res.json({
+        animal: 'squirell',
+        bodyPart: 'tail',
+        adjective: 'long',
+        noun: 'my dick'
+    });
 });
 
 //Handling 404 error

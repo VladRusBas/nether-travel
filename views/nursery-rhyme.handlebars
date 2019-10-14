@@ -1,0 +1,37 @@
+{{#section 'head'}}
+    <script src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/1.3.0/handlebars.min.js"></script>
+    <script id="nurseryRhymeTemplate" type="text/x-handlebars-template">
+        Mary had a little <b>\{{animal}}</b>, his <b>\{{bodyPart}}</b> was <b>\{{adjective}}</b>, like <b>\{{noun}}</b>.
+    </script>
+{{/section}}
+
+<div id="nurseryRhyme">Click the button...</div>
+<hr>
+<button id="btnNurseryRhyme">Nursery rhyme generation</button>
+<button id="btnNurseryRhymeAjax">Nursery rhyme generation from AJAX</button>
+
+{{#section 'jquery'}}
+    <script>
+        $(document).ready(function(){
+            var nurseryRhymeTemplate = Handlebars.compile($('#nurseryRhymeTemplate').html());
+            var $nurseryRhyme = $('#nurseryRhyme');
+            $('#btnNurseryRhyme').on('click', function(evt){
+                evt.preventDefault();
+                $nurseryRhyme.html(nurseryRhymeTemplate({
+                    animal: 'bear',
+                    bodyPart: 'arm',
+                    adjective: 'warm',
+                    noun: 'Satan'
+                }));
+            });
+            $('#btnNurseryRhymeAjax').on('click', function(evt){
+                evt.preventDefault();
+                $.ajax('/data/nursery-rhyme', {
+                    success: function(data){
+                        $nurseryRhyme.html(nurseryRhymeTemplate(data));
+                    }
+                });
+            });
+        });
+    </script>
+{{/section}}
